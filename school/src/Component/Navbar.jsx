@@ -1,4 +1,4 @@
-
+import { IoIosLogOut } from "react-icons/io";
 import { Link } from "react-router-dom"
 const Navbar = () => {
 return (
@@ -12,6 +12,10 @@ return (
                     <Link to="/register" className="w-full"><p href="" className="  duration-100 transition-all hover:shadow   text-xl font-medium p-4    hover:border-l-5 hover:border-blue-400 ">Ajout des étudiants</p></Link>
                     <Link to="/note" className="w-full"><p href="" className="  duration-100 transition-all hover:shadow   text-xl font-medium p-4    hover:border-l-5 hover:border-green-400 ">Ajout des notes</p></Link>
                     <Link to="/liste" className="w-full"><p href="" className="  duration-100 transition-all hover:shadow   text-xl font-medium p-4    hover:border-l-5 hover:border-red-400 ">Liste des étudiants</p></Link>
+                </div>
+                <div className="  flex items-center justify-center gap-5 ">
+                   
+                    <Link to="/">  <span className="text-4xl font-bold duration-200 transition-colors hover:text-red-700 text-red-400 cursor-pointer"><IoIosLogOut /></span></Link>
                 </div>
             </div>
 )

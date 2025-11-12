@@ -3,6 +3,7 @@ import Login from "./Component/Login"
 import Liste from "./Component/Dashboard/Liste"
 import Register from "./Component/Dashboard/Register"
 import Notes from "./Component/Dashboard/Notes"
+import Affichage from "./Component/Dashboard/Affichage"
 
 function App() {
 
@@ -14,6 +15,7 @@ function App() {
             <Route path="/liste" element={<Liste/>}></Route>
             <Route path="/register" element={<Register/>}></Route>
             <Route path="/note" element={<Notes/>}></Route>
+            <Route path="/affichage/:id" element={<Affichage/>}></Route>
         </Routes>
       </BrowserRouter>
     </>

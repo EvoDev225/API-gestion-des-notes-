@@ -13,23 +13,38 @@ const db = mysql.createConnection({
     database:"api_school"
 })
 //Connexion de l'administrateur
-app.post('/',(req,res)=>{
-    const sql = "SELECT * FROM admin WHERE code =?"
+app.post('/login',(req,res)=>{
     const code = req.body.code
-    db.query(sql,[code],(err,response)=>{
+    const sqlAdmin = "SELECT * FROM admin WHERE code =?"
+    db.query(sqlAdmin,[code],(err,response)=>{
         if(err){
             return res.status(500).json({message : "Une erreur est survenue !"})
         }
         if(!response || response.length === 0 ){
             return res.status(401).json( {Message : "Le code est incorrecte !"})
         }
-        return res.status(200).json({Status: "Success"})
+        return res.status(200).json({Status: "admin",Message:"Administrateur connecté"})
+    })
+    
+
+})
+app.post('/etudiant',(req,res)=>{
+    const matetud = req.body.code
+     const sqlEtudiant = "SELECT * FROM etudiant WHERE matetud =?"
+    db.query(sqlEtudiant,[matetud],(err,response)=>{
+        if(err){
+            return res.status(500).json({message : "Une erreur est survenue !"})
+        }
+        if(!response || response.length === 0 ){
+            return res.status(401).json( {Message : "Le code est incorrecte !"})
+        }
+        return res.status(200).json({Status: "etudiant",Message:"Etudiant connecté"})
     })
 })
 
 //Affichage des étudiants et des notes
 app.post("/liste",(req,res)=>{
-    const sql = "SELECT DISTINCT etudiant.matetud, etudiant.nometud, etudiant.prenetud, etudiant.datenaiss, etudiant.sexeetud, etudiant.idclasse FROM etudiant WHERE etudiant.idclasse = ?"
+    const sql = "SELECT DISTINCT etudiant.matetud, etudiant.nometud, etudiant.prenetud, etudiant.datenaiss, etudiant.sexeetud, etudiant.idclasse,note.moyenne FROM etudiant,note WHERE etudiant.matetud=note.matetud AND etudiant.idclasse = ?"
     const classe = req.body.id
     console.log('POST /liste reçu avec idclasse:', classe)
     
@@ -189,7 +204,18 @@ app.post('/note/enregistrer',(req,res)=>{
 })
 
 
+//Affichage des notes
+app.get('/affichage/:id',(req,res)=>{
+    const id = req.params.id
+    const sql = "SELECT * FROM etudiant,note WHERE etudiant.matetud=note.matetud AND etudiant.matetud=? "
+    db.query(sql,[id],(err,response)=>{
+        if(err){
+            return res.status(500).json({Status: 'Error', Message: 'Erreur serveur', Error: err.message})
+        }
+        return res.status(200).json({Status: 'Success', data:response})
 
+    })
+})
 
 
 app.listen(port,()=>{

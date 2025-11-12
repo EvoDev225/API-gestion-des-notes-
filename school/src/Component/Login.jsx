@@ -1,4 +1,4 @@
-import { useState, } from "react";
+import {  useState, } from "react";
 import { FaUser } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios"
@@ -15,13 +15,32 @@ const Login = () => {
         e.preventDefault()
         setError('')
         setTest(false)
-        axios.post('http://localhost:3000', value)
+
+    axios.post('http://localhost:3000/login', value)
             .then(res => {
-                if (res.data.Status === "Success") {
+                if (res.data.Status === "admin") {
                     navigate("/liste")
                     setError('')
                     setTest(false)
-                } else {
+                }
+                else {
+                    setError(res.data.Message || 'Le matricule est incorrecte !')
+                    setTest(true)
+                }
+            })
+            .catch(err => {
+                setError(err.response?.data?.Message || 'Une erreur est survenue !')
+                setTest(true)
+                console.log(err)
+            })
+            axios.post('http://localhost:3000/etudiant', value)
+            .then(res => {
+                if (res.data.Status === "etudiant") {
+                    navigate(`/affichage/${value.code}`)
+                    setError('')
+                    setTest(false)
+                }
+                else {
                     setError(res.data.Message || 'Le matricule est incorrecte !')
                     setTest(true)
                 }
@@ -32,6 +51,8 @@ const Login = () => {
                 console.log(err)
             })
     }
+    
+
     return (
         <div className='  bg-[#dee2e6] min-h-screen flex items-center'>
             <div className=' bg-white rounded-3xl p-20  w-3xl mx-auto '>
