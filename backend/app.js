@@ -41,7 +41,7 @@ app.post("/liste",(req,res)=>{
         return res.status(404).json({Message : "Aucun étudiant trouvé pour cette classe !"})
     })
 })
-
+// Selection des notes par etudiants
 app.post("/note-etudiant",(req,res)=>{
     const sql = "SELECT * FROM note WHERE matetud = ?"
     const matetud = req.body.matetud
@@ -73,15 +73,7 @@ app.post("/pourcentage-reussite",(req,res)=>{
         return res.status(200).json({Status: "Success", pourcentage: pourcentage, reussis: reussis, total: total})
     })
 })
-// app.get('/liste',(req,res)=>{
-//     const sql = "SELECT * FROM etudiant"
-//     db.query(sql,(err,response)=>{
-//         if(err){
-//             return res.status(401).json({message: "erreur"})
-//         }
-//         return res.status(200).json({data: response})
-//     })
-// })
+
 // Supprimer un étudiant 
 app.post('/supprimer/:matetud',(req,res)=>{
     const id = req.params.matetud
@@ -104,7 +96,57 @@ app.get('/liste',(req,res)=>{
         return res.status(200).json({Status: "Success", count: count})
     })
 })
+//Ajout des etudiants
+//Récuperation des classes
+app.get('/register',(req,res)=>{
+    const sql = "SELECT idclasse,nomclasse FROM classe "
+    db.query(sql,(err,response)=>{
+        if(err){
+            return res.status(500).json({message: "Erreur serveur"})
+        }
+        if(response.length > 0){
+        return res.status(200).json({Status: "Success", data: response})
+        }
+    })
+})
+app.post('/register', (req, res) => {
+    
+        const { matetud, nometud, prenetud, datenaiss, sexeetud, idclasse } = req.body
+        
+        // Validation des champs requis
 
+        // Validation du format du matricule (optionnel)
+
+        const sql = "INSERT INTO etudiant (matetud, nometud, prenetud, datenaiss, sexeetud, idclasse) VALUES (?, ?, ?, ?, ?, ?)"
+        const values = [matetud, nometud, prenetud, datenaiss, sexeetud, idclasse]
+
+        db.query(sql, values, (err, response) => {
+            if (err) {
+                if (err.code === 'ER_DUP_ENTRY') {
+                    return res.status(409).json({ 
+                        Status: 'Error',
+                        Message: 'Le matricule existe déjà' 
+                    })
+                }
+                console.error('Erreur SQL /register :', err)
+                return res.status(500).json({ 
+                    Status: 'Error',
+                    Message: 'Erreur serveur lors de l\'insertion' 
+                })
+            }
+            
+            return res.status(201).json({ 
+                Status: 'Success', 
+                Message: 'Étudiant ajouté avec succès',
+                Data: {
+                    id: response.insertId,
+                    matricule: matetud
+                }
+            })
+        })
+        
+})
+//Ajout des etudiants
 app.listen(port,()=>{
     console.log("Listening... !")
     
