@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios"
 import Navbar from "../Navbar";
+
 const Liste = () => {
+    const navigate = useNavigate()
     const classe = [
         {
             id: "0",
@@ -58,6 +60,7 @@ const Liste = () => {
                     if (res.data.Status === "Success") {
                         setListe(res.data.data);
                         console.log("✅ Données récupérées !");
+                        setReqIdClasse('')
                     } else {
                         setListe([]);
                         alert("Aucun étudiant trouvé !");
@@ -66,8 +69,26 @@ const Liste = () => {
                 .catch((error) => {
                     console.error("Erreur Axios:", error);
                 });
+            
+            // Récupérer le pourcentage de réussite
+            axios
+                .post("http://localhost:3000/pourcentage-reussite", reqIdClasse)
+                .then((res) => {
+                    if (res.data.Status === "Success") {
+                        setPourcentageReussite(res.data.pourcentage)
+                    }
+                })
+                .catch((error) => {
+                    console.error("Erreur pourcentage:", error);
+                });
         }
     }, [reqIdClasse]);
+    // État pour gérer le tri (A-Z / Z-A)
+    // eslint-disable-next-line no-unused-vars
+    const [sortOrder, setSortOrder] = useState("") // "asc", "desc", ou ""
+    
+    // État pour le pourcentage de réussite
+    const [pourcentageReussite, setPourcentageReussite] = useState(0)
     //Affichage des notes de l'étudiant unique
     const [matricule, setMatricule] = useState("")
     const [note, setNote] = useState([])
@@ -93,20 +114,82 @@ const Liste = () => {
         }
 
     }, [matricule])
-    console.log(note)
+    
+    // Fonction pour supprimer un étudiant avec confirmation
+    const handleDeleteStudent = (matetud) => {
+        if (window.confirm("Êtes-vous sûr de vouloir supprimer cet étudiant et toutes ses données ?")) {
+            axios.post(`http://localhost:3000/supprimer/${matetud}`, { matetud: matetud })
+                // eslint-disable-next-line no-unused-vars
+                .then(res => {
+                    alert("L'étudiant a été supprimé avec succès !")
+                    // Rafraîchir la liste en réinitialisant
+                    setReqIdClasse(reqIdClasse)
+                    setMatricule("")
+                    setNote([])
+                    navigate("/liste")
+                })
+                .catch(error => {
+                    console.error("Erreur lors de la suppression :", error)
+                    alert("Erreur lors de la suppression de l'étudiant")
+                })
+        }
+    }
 
+    // Fonction pour trier les étudiants par nom + prénom
+    const sortStudents = (order) => {
+        const sorted = [...liste]
+        if (order === "asc") {
+            sorted.sort((a, b) => {
+                const nameA = (a.nometud + a.prenetud).toLowerCase()
+                const nameB = (b.nometud + b.prenetud).toLowerCase()
+                return nameA.localeCompare(nameB)
+            })
+        } else if (order === "desc") {
+            sorted.sort((a, b) => {
+                const nameA = (a.nometud + a.prenetud).toLowerCase()
+                const nameB = (b.nometud + b.prenetud).toLowerCase()
+                return nameB.localeCompare(nameA)
+            })
+        }
+        setSortOrder(order)
+        setListe(sorted)
+    }
+    //Total est étudiant
+    const [nbetudiant, setNbEtudiant] = useState(0)
+    
+    useEffect(() => {
+        axios.get('http://localhost:3000/liste')
+            .then(res => {
+                if (res.data.Status === "Success") {
+                    setNbEtudiant(res.data.count)  // ← Récupère le nombre total directement
+                }
+            })
+            .catch(error => console.log(error))
+    }, [])  // ← Exécuté une seule fois au chargement du composant
+console.log(liste)
     return (
-        <div className='  bg-[#dee2e6] relative min-h-screen flex items-center'>
+        <div className='   py-30 bg-[#dee2e6] relative min-h-screen flex '>
             <Navbar />
-            <div className=" p-10  min-h-[90vh] bg-white rounded-3xl min-w-7xl">
+            <div className="  ml-100   p-10  min-h-[90vh] bg-white rounded-3xl min-w-7xl">
                 <div className="max-w-7xl mx-auto  p-10">
                     <div >
                         <h1 className="text-5xl font-bold">Tableau de bord</h1>
                     </div>
                     <div className=" flex items-center justify-around  my-15 ">
-                        <div className="p-10  rounded-2xl shadown">Nombre total d'étudiant</div>
-                        <div className="p-10  rounded-2xl shadown">Effectif par classe</div>
-                        <div className="p-10  rounded-2xl shadown">Pourcentage de réussite</div>
+                        <div className="p-10  rounded-2xl shadown">
+                            <h3 className="text-lg font-semibold mb-2">Nombre total d'étudiant</h3>
+                            <p className="text-4xl font-bold text-blue-600">{nbetudiant}</p>
+                        </div>
+                        <div className="p-10  rounded-2xl shadown">
+                            <h3 className="text-lg font-semibold mb-2">Effectif par classe</h3>
+                            <p className="text-4xl font-bold text-green-600">{liste.length}</p>
+                        </div>
+                        <div className="p-10  rounded-2xl shadown">
+                            <h3 className="text-lg font-semibold mb-2">Pourcentage de réussite</h3>
+                            <p className={`text-4xl font-bold ${pourcentageReussite >= 70 ? 'text-green-600' : pourcentageReussite >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
+                                {pourcentageReussite}%
+                            </p>
+                        </div>
                     </div>
                     <div className=" mt-15 w-full p-5 border flex items-center justify-around rounded-full ">
                         <div className="flex items-center gap-1.5">
@@ -123,18 +206,15 @@ const Liste = () => {
                                 <option value="">...</option>
                                 {
                                     liste.map((etudiant) => (
-                                        <option value={etudiant.matetud} key={etudiant.matetud}> {etudiant.nometud + etudiant.prenetud} </option>
+                                        <option value={etudiant.matetud} key={etudiant.matetud}> {etudiant.nometud } {etudiant.prenetud} </option>
                                     ))
                                 }
                             </select>
                         </div>
-                        <button className=" p-2 hover:text-gray-500 transition-all duration-150 cursor-pointer rounded-2xl">
-                            Afficher tout
-                        </button>
-                        <button className=" p-2 hover:text-gray-500 transition-all duration-150 cursor-pointer rounded-2xl">
+                        <button onClick={() => sortStudents("asc")} className=" p-2 hover:text-gray-500 transition-all duration-150 cursor-pointer rounded-2xl">
                             A-Z
                         </button>
-                        <button className=" p-2 hover:text-gray-500 transition-all duration-150 cursor-pointer rounded-2xl">Z-A</button>
+                        <button onClick={() => sortStudents("desc")} className=" p-2 hover:text-gray-500 transition-all duration-150 cursor-pointer rounded-2xl">Z-A</button>
                     </div>
                     <div className="  p-5">
                         <table cellSpacing={20} className=" table-auto border-collapse w-full ">
@@ -162,7 +242,7 @@ const Liste = () => {
                                             <td className="p-3">
                                                 <div className="flex items-center gap-2">
                                                     <button className=" p-3 bg-green-500 text-white font-medium rounded cursor-pointer duration-200 hover:bg-green-600 ">Modifier</button>
-                                                    <button className=" p-3 bg-red-500 text-white font-medium rounded cursor-pointer duration-200 hover:bg-red-600 ">Supprimer</button>
+                                                    <button onClick={() => handleDeleteStudent(etud.matetud)} className=" p-3 bg-red-500 text-white font-medium rounded cursor-pointer duration-200 hover:bg-red-600 ">Supprimer</button>
                                                 </div>
                                             </td>
                                         </tr>

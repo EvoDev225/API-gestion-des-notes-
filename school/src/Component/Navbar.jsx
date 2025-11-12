@@ -2,7 +2,7 @@
 import { Link } from "react-router-dom"
 const Navbar = () => {
   return (
-      <div className=" bg-white min-h-[90vh] mx-10 flex flex-col rounded-3xl py-20 gap-20 ">
+     <div className=" fixed top-50  bg-white h-[70vh]  mx-10 flex flex-col rounded-3xl py-20 gap-20 w-80">
                 <div className=" px-10">
                     <h1 className="font-bold text-2xl">
                         Bienvenue  <br />chez administrateur
