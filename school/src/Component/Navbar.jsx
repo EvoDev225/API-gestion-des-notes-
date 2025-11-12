@@ -9,7 +9,7 @@ const Navbar = () => {
                     </h1>
                 </div>
                 <div className=" grid gap-12 w-full">
-                    <Link to="/" className="w-full"><p href="" className="  duration-100 transition-all hover:shadow   text-xl font-medium p-4    hover:border-l-5 hover:border-blue-400 ">Ajout des étudiants</p></Link>
+                    <Link to="/register" className="w-full"><p href="" className="  duration-100 transition-all hover:shadow   text-xl font-medium p-4    hover:border-l-5 hover:border-blue-400 ">Ajout des étudiants</p></Link>
                     <Link to="/" className="w-full"><p href="" className="  duration-100 transition-all hover:shadow   text-xl font-medium p-4    hover:border-l-5 hover:border-green-400 ">Ajout des notes</p></Link>
                     <Link to="/liste" className="w-full"><p href="" className="  duration-100 transition-all hover:shadow   text-xl font-medium p-4    hover:border-l-5 hover:border-red-400 ">Liste des étudiants</p></Link>
                 </div>
