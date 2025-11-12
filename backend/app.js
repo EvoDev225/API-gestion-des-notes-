@@ -29,16 +29,22 @@ app.post('/',(req,res)=>{
 
 //Affichage des étudiants et des notes
 app.post("/liste",(req,res)=>{
-    const sql = "SELECT etudiant.*, note.* FROM etudiant LEFT JOIN note ON etudiant.matetud = note.matetud WHERE etudiant.idclasse = ?"
+    const sql = "SELECT DISTINCT etudiant.matetud, etudiant.nometud, etudiant.prenetud, etudiant.datenaiss, etudiant.sexeetud, etudiant.idclasse FROM etudiant WHERE etudiant.idclasse = ?"
     const classe = req.body.id
+    console.log('POST /liste reçu avec idclasse:', classe)
+    
     db.query(sql,[classe],(err,response)=>{
         if(err){
+            console.error('Erreur SQL /liste:', err)
             return res.status(500).json({Message : "Erreur sur le serveur !"})
         }
+        console.log('Réponse SQL /liste:', response.length, 'lignes')
+        
+        // Toujours retourner 200 avec une liste (vide ou complète)
         if(response.length > 0){
-            return res.status(200).json({Status: "Success", data :response})
+            return res.status(200).json({Status: "Success", data: response})
         }
-        return res.status(404).json({Message : "Aucun étudiant trouvé pour cette classe !"})
+        return res.status(200).json({Status: "Success", data: []})
     })
 })
 // Selection des notes par etudiants
@@ -147,6 +153,45 @@ app.post('/register', (req, res) => {
         
 })
 //Ajout des etudiants
+
+//affichage des classes dans note
+app.post('/note',(req,res)=>{
+    const sql = "SELECT matetud, nometud, prenetud FROM etudiant WHERE idclasse = ?"
+    const idclasse = req.body.idclasse
+    db.query(sql,[idclasse],(err,response)=>{
+        if(err){
+            console.error('Erreur SQL /note:', err)
+            return res.status(500).json({Status: 'Error', Message: 'Erreur serveur', Error: err.message})
+        }
+        
+        // Corriger la condition : response.length au lieu de response
+        if(response.length > 0){
+            return res.status(200).json({Status: 'Success', Message: "Etudiants trouvés", data: response})
+        }
+        // Retourner liste vide en succès
+        return res.status(200).json({Status: 'Success', Message: 'Aucun étudiant', data: []})
+    })
+})
+
+//Insertion des notes
+app.post('/note/enregistrer',(req,res)=>{
+    const {matetud,DSFR,DEFR,MFR,DSMATH,DEMATH,MMATH,DSANG,DEANG,MANG,DSSVT, DESVT,MSVT,moyenne} = req.body
+    console.log("Donnee recu",req.body)
+    const sql = "INSERT INTO note(matetud,DSFR,DEFR,MFR,DSMATH,DEMATH,MMATH,DSANG,DEANG,MANG,DSSVT,DESVT,MSVT,moyenne)VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+    const values = [matetud,DSFR,   DEFR,MFR, DSMATH,DEMATH,MMATH,DSANG,DEANG,MANG,DSSVT,DESVT,MSVT,moyenne]
+    db.query(sql,values,(err,response)=>{
+        if(err){
+            console.error('Erreur SQL /note:', err)
+            return res.status(500).json({Status: 'Error', Message: 'Erreur serveur', Error: err.message})
+        }
+        return res.status(200).json({Status: 'Success', Message: "Note enregistrée"})
+    })
+})
+
+
+
+
+
 app.listen(port,()=>{
     console.log("Listening... !")
     

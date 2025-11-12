@@ -48,20 +48,22 @@ const Liste = () => {
     };
     useEffect(() => {
         if (reqIdClasse.id !== "") {
+            console.log('📤 POST /liste avec reqIdClasse:', reqIdClasse)
             axios
                 .post("http://localhost:3000/liste", reqIdClasse)
                 .then((res) => {
+                    console.log('📥 Réponse /liste:', res.data)
                     if (res.data.Status === "Success") {
                         setListe(res.data.data);
-                        console.log("✅ Données récupérées !");
+                        console.log("✅ Données récupérées !", res.data.data.length, "lignes");
                         setReqIdClasse("");
                     } else {
                         setListe([]);
-                        alert("Aucun étudiant trouvé !");
+                        console.warn("⚠️ Aucun étudiant trouvé !");
                     }
                 })
                 .catch((error) => {
-                    console.error("Erreur Axios:", error);
+                    console.error("❌ Erreur Axios /liste:", error);
                 });
 
             // Récupérer le pourcentage de réussite
@@ -73,7 +75,7 @@ const Liste = () => {
                     }
                 })
                 .catch((error) => {
-                    console.error("Erreur pourcentage:", error);
+                    console.error("❌ Erreur pourcentage:", error);
                 });
         }
     }, [reqIdClasse]);
